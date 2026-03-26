@@ -2,8 +2,8 @@ import Animation from "./Animation";
 
 export default function Home() {
   return (
-    <section id="Home" className="min-h-screen bg-gray-100 flex items-center pt-6 md:pt-10">
-      <div className="container mx-auto px-2 grid grid-cols-1 md:grid-cols-2 items-center gap-5">
+    <section id="Home" className="min-h-screen bg-gray-100 flex items-center pt-6 md:pt-10" style={{ minHeight: 'calc(100vh - 64px)' }}>
+      <div className="container mx-32 px-2 grid grid-cols-1 md:grid-cols-2 items-center gap-5">
         
         {/* LEFT SIDE – CONTENT */}
         <div className="space-y-8">
