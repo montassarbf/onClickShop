@@ -47,7 +47,7 @@ const Settings: React.FC = () => {
       const path = res.data.profile_image;
       const fullUrl = path.startsWith("http")
         ? path
-        : `http://127.0.0.1:8000/storage/${path}`;
+        : `http://onclickshop.onrender.com/storage/${path}`;
 
       // ✅ Mettre à jour le context → la Navbar se met à jour instantanément
       setProfileImage(fullUrl);

@@ -32,7 +32,7 @@ const Profile: React.FC = () => {
   const avatarUrl = user?.profile_image
     ? user.profile_image.startsWith("http")
       ? user.profile_image
-      : `http://127.0.0.1:8000/storage/${user.profile_image.replace(/^\//, "")}`
+      : `http://onclickshop.onrender.com/storage/${user.profile_image.replace(/^\//, "")}`
     : "https://api.dicebear.com/7.x/avataaars/svg?seed=profile";
 
   if (loading) {

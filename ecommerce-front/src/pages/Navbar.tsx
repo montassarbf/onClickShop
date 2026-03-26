@@ -55,7 +55,7 @@ const Navbar: React.FC = () => {
           if (res.data.profile_image) {
             const img = res.data.profile_image.startsWith("http")
               ? res.data.profile_image
-              : `http://127.0.0.1:8000/storage/${res.data.profile_image}`;
+              : `http://onclickshop.onrender.com/storage/${res.data.profile_image}`;
             setProfileImage(img);
           }
         })
