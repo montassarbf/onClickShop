@@ -12,6 +12,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart', [OrderItemController::class, 'addToCart']);
     Route::put('/cart/{id}', [OrderItemController::class, 'updateQuantity']);
     Route::delete('/cart/{id}', [OrderItemController::class, 'removeFromCart']);
+    Route::post('/user/profile-image', [AuthController::class, 'updateProfileImage']); // ← ajouter
+
 });
 
 // PUBLIC ROUTES
@@ -25,7 +27,6 @@ Route::post('/register', [AuthController::class, 'register']);
 // PROTECTED ROUTES
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']); // logout nécessite token
-        Route::post('/user/profile-image', [AuthController::class, 'updateProfileImage']);
     Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
     return response()->json([
         'id' => $request->user()->id,

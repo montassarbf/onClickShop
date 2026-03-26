@@ -35,7 +35,6 @@ const Settings: React.FC = () => {
 
     const formData = new FormData();
     formData.append("profile_image", file);
-
     setUploading(true);
     setUploadMsg(null);
 
@@ -116,11 +115,11 @@ const Settings: React.FC = () => {
                   onChange={handleFileChange}
                 />
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 ">
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="btn btn-sm btn-outline border-orange-400 text-orange-500 hover:bg-orange-50"
+                    className="p-2 btn btn-sm btn-outline border-orange-400 text-orange-500 hover:bg-orange-50"
                   >
                     Choose file
                   </button>
@@ -130,10 +129,10 @@ const Settings: React.FC = () => {
                       type="button"
                       onClick={handleUpload}
                       disabled={uploading}
-                      className="btn btn-sm bg-orange-500 hover:bg-orange-600 text-white border-0 disabled:opacity-60"
+                      className="btn btn-sm bg-orange-500 hover:bg-orange-600 text-white border-0 disabled:opacity-60 p-2"
                     >
                       {uploading ? (
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center gap-2 p-2">
                           <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
@@ -152,7 +151,7 @@ const Settings: React.FC = () => {
                         setUploadMsg(null);
                         if (fileInputRef.current) fileInputRef.current.value = "";
                       }}
-                      className="btn btn-sm btn-ghost text-gray-400 hover:text-red-400"
+                      className="btn btn-sm btn-ghost text-gray-400 hover:text-red-400 p-2"
                     >
                       Cancel
                     </button>

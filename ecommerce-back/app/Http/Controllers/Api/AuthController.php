@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-
 class AuthController extends Controller
 {
     public function login(Request $request)
@@ -66,6 +65,7 @@ class AuthController extends Controller
             'message' => 'Logged out'
         ]);
     }
+
     public function updateProfileImage(Request $request)
 {
     $request->validate([

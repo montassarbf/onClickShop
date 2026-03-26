@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'name',
         'description',
@@ -16,7 +14,7 @@ class Product extends Model
         'stock',
         'category_id',
         'image_url',
-        'is_deal',
+        
         'discount_percent',
     ];
 
@@ -30,6 +28,7 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
 
     public function orderItems()
     {

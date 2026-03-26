@@ -100,7 +100,7 @@ export default function Home() {
   <span
     className="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-gray-200"
   ></span>
-  <span className="relative text-base font-semibold">Learn More</span>
+  <span className="relative text-base font-semibold" onClick={ () => window.location.href=("#contact")}>Contact</span>
 </button>
           </div>
         </div>

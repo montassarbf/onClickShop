@@ -47,7 +47,7 @@ const Profile: React.FC = () => {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-4">
         <p className="text-gray-600">{error || "Something went wrong."}</p>
-        <button type="button" className="btn bg-orange-500 text-white" onClick={() => navigate("/login")}>
+        <button type="button" className="btn bg-orange-500 text-white p-2" onClick={() => navigate("/login")}>
           Go to login
         </button>
       </div>
