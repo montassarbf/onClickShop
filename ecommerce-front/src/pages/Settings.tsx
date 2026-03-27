@@ -44,14 +44,11 @@ const Settings: React.FC = () => {
       });
 
       // Construire l'URL complète
-      const path = res.data.profile_image;
-      const fullUrl = path.startsWith("http")
-        ? path
-        : `http://onclickshop.onrender.com/storage/${path}`;
+      const image = res.data.profile_image;
 
-      // ✅ Mettre à jour le context → la Navbar se met à jour instantanément
-      setProfileImage(fullUrl);
-      setPreview(fullUrl);
+      // ✅ utilise directement ce que le backend retourne
+      setProfileImage(image);
+      setPreview(image);
       setUploadMsg({ text: "Photo updated successfully!", ok: true });
     } catch {
       setUploadMsg({ text: "Failed to upload photo. Please try again.", ok: false });
