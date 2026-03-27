@@ -2,7 +2,7 @@ import Animation from "./Animation";
 
 export default function Home() {
   return (
-    <section id="Home" className="min-h-screen bg-gray-100 flex items-center pt-20 md:pt-10" style={{ minHeight: 'calc(100vh - 64px)' }}>
+    <section id="Home" className="min-h-screen bg-gray-100 flex items-center pt-20 md:pt-10 lg:pl-10 lg:pr-10" style={{ minHeight: 'calc(100vh - 64px)' }}>
       <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 items-center gap-5">
         
         {/* LEFT SIDE – CONTENT */}
