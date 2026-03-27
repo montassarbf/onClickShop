@@ -6,29 +6,24 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
+
 class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        // Validation des champs
         $request->validate([
             'email' => 'required|email',
             'password' => 'required'
         ]);
 
-        // Chercher l'utilisateur par email
         $user = User::where('email', $request->email)->first();
 
-        // Vérifier si l'utilisateur existe et si le mot de passe correspond
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        // Créer un token pour l'utilisateur
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Retourner les infos utilisateur + token
         return response()->json([
             'user' => $user,
             'token' => $token
@@ -48,7 +43,6 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Crée un token pour l'utilisateur
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
@@ -67,26 +61,22 @@ class AuthController extends Controller
     }
 
     public function updateProfileImage(Request $request)
-{
-    $request->validate([
-        'profile_image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048'
-    ]);
+    {
+        $request->validate([
+            'profile_image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048'
+        ]);
 
-    $user = $request->user();
+        $user = $request->user();
 
-    // Supprimer l'ancienne photo si elle existe
-    if ($user->profile_image) {
-        Storage::disk('public')->delete($user->profile_image);
+        // ✅ Convert to base64 and store directly in DB — no filesystem needed!
+        $file = $request->file('profile_image');
+        $base64 = 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath()));
+
+        $user->update(['profile_image' => $base64]);
+
+        return response()->json([
+            'message' => 'Profile image updated',
+            'profile_image' => $base64
+        ]);
     }
-
-    // Sauvegarder la nouvelle
-    $path = $request->file('profile_image')->store('profile_images', 'public');
-
-    $user->update(['profile_image' => $path]);
-
-    return response()->json([
-        'message' => 'Profile image updated',
-        'profile_image' => $path
-    ]);
-}
 }

@@ -208,7 +208,7 @@ const Navbar: React.FC = () => {
 
         {/* Avatar / Login */}
         {isLoggedIn ? (
-          <div className="dropdown dropdown-end ml-2 sm:ml-4">
+          <div className="dropdown dropdown-end sm:ml-2 ">
             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle btn-sm avatar ring-2 ring-orange-100 hover:ring-orange-300">
               <div className="w-8 rounded-full bg-gray-100 overflow-hidden">
                 {profileImage ? (
@@ -248,7 +248,7 @@ const Navbar: React.FC = () => {
             </ul>
           </div>
         ) : (
-          <div className="flex gap-1 sm:gap-2 items-center  ml-2 sm:ml-4">
+          <div className="flex gap-1 sm:gap-2 items-center sm:ml-2">
             <button
               type="button"
               className="btn btn-xs sm:btn-sm rounded-full bg-gray-100 text-gray-700 hover:bg-orange-100 hover:text-orange-700 border border-gray-200/80 px-3 sm:px-5 min-h-0 h-8 sm:h-9 text-xs sm:text-sm"

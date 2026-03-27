@@ -39,11 +39,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     api.get("/me")
       .then((res) => {
         if (res.data.profile_image) {
-          // ✅ Always use https://
-          const img = res.data.profile_image.startsWith("http")
-            ? res.data.profile_image.replace("http://", "https://")
-            : `https://onclickshop.onrender.com/storage/${res.data.profile_image}`;
-          setProfileImage(img);
+          // ✅ base64 or full URL — use directly
+          setProfileImage(res.data.profile_image);
         }
       })
       .catch(() => {});
