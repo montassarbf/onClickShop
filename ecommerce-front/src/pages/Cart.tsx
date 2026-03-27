@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
+import { useNavigate } from "react-router-dom";
 import api from "../api/apiClient";
 
 interface OrderItem {
@@ -17,6 +18,8 @@ interface OrderItem {
 const CART_ITEMS_CACHE = "cart_order_items_cache";
 
 const readCache = (): OrderItem[] => {
+  // ✅ Only read cache if user is logged in
+  if (!localStorage.getItem("token")) return [];
   try { const r = localStorage.getItem(CART_ITEMS_CACHE); return r ? JSON.parse(r) : []; }
   catch { return []; }
 };
@@ -56,19 +59,22 @@ const AmexIcon = () => (
 type PaymentMethod = "visa" | "mastercard" | "paypal" | "amex";
 
 const Cart: React.FC = () => {
-  // ✅ Lire depuis localStorage immédiatement
+  const isLoggedIn = !!localStorage.getItem("token");
+  const navigate = useNavigate();
+
+  // ✅ Empty if not logged in
   const [orderItems, setOrderItems] = useState<OrderItem[]>(readCache);
-  const [loading,    setLoading]    = useState(orderItems.length === 0);
+  const [loading, setLoading] = useState(isLoggedIn && orderItems.length === 0);
 
   const { removeProductFromCart, clearCart } = useCart();
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("visa");
-  const [cardNumber,    setCardNumber]    = useState("");
-  const [cardName,      setCardName]      = useState("");
-  const [expiry,        setExpiry]        = useState("");
-  const [cvv,           setCvv]           = useState("");
-  const [showCvv,       setShowCvv]       = useState(false);
-  const [payEmail,      setPayEmail]      = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardName, setCardName] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [showCvv, setShowCvv] = useState(false);
+  const [payEmail, setPayEmail] = useState("");
 
   const updateItems = (items: OrderItem[]) => {
     writeCache(items);
@@ -76,7 +82,11 @@ const Cart: React.FC = () => {
   };
 
   useEffect(() => {
-    // ✅ Sync en arrière-plan
+    // ✅ Only fetch cart if logged in
+    if (!isLoggedIn) {
+      setLoading(false);
+      return;
+    }
     api.get<OrderItem[]>("/cart")
       .then((res) => updateItems(res.data))
       .catch((err) => console.log(err))
@@ -117,8 +127,27 @@ const Cart: React.FC = () => {
     </div>
   );
 
-  const total      = orderItems.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
-  const shipping   = total > 0 ? 9.99 : 0;
+  // ✅ Show login prompt if not logged in
+  if (!isLoggedIn) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" viewBox="0 0 24 24" className="text-gray-300">
+        <circle r="1" cy="21" cx="9" stroke="currentColor" strokeWidth="1.5"/>
+        <circle r="1" cy="21" cx="20" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+      <p className="text-gray-500 text-lg font-medium">Please login to view your cart.</p>
+      <button
+        type="button"
+        className="btn rounded-full bg-orange-400 hover:bg-orange-500 text-white border-0 px-8"
+        onClick={() => navigate("/login")}
+      >
+        Login
+      </button>
+    </div>
+  );
+
+  const total = orderItems.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
+  const shipping = total > 0 ? 9.99 : 0;
   const grandTotal = total + shipping;
   const isCardMethod = paymentMethod !== "paypal";
 

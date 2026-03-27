@@ -29,10 +29,11 @@ const Profile: React.FC = () => {
     load();
   }, []);
 
+  // ✅ Always https://
   const avatarUrl = user?.profile_image
     ? user.profile_image.startsWith("http")
-      ? user.profile_image
-      : `http://onclickshop.onrender.com/storage/${user.profile_image.replace(/^\//, "")}`
+      ? user.profile_image.replace("http://", "https://")
+      : `https://onclickshop.onrender.com/storage/${user.profile_image.replace(/^\//, "")}`
     : "https://api.dicebear.com/7.x/avataaars/svg?seed=profile";
 
   if (loading) {

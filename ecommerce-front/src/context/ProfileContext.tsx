@@ -16,7 +16,6 @@ export const useProfile = () => useContext(ProfileContext);
 const CACHE_KEY = "profile_image_url";
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // ✅ Lire IMMÉDIATEMENT depuis localStorage — 0ms, pas de reload
   const [profileImage, setProfileImageState] = useState<string>(
     () => localStorage.getItem(CACHE_KEY) || ""
   );
@@ -34,17 +33,16 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    // ✅ Si image déjà en cache → NE PAS appeler /me du tout
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) return;
 
-    // Seulement si pas de cache → fetch en arrière-plan
     api.get("/me")
       .then((res) => {
         if (res.data.profile_image) {
+          // ✅ Always use https://
           const img = res.data.profile_image.startsWith("http")
-            ? res.data.profile_image
-            : `http://onclickshop.onrender.com/storage/${res.data.profile_image}`;
+            ? res.data.profile_image.replace("http://", "https://")
+            : `https://onclickshop.onrender.com/storage/${res.data.profile_image}`;
           setProfileImage(img);
         }
       })
