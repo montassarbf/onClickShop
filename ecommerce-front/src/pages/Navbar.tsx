@@ -48,10 +48,8 @@ const Navbar: React.FC = () => {
         .then((res) => {
           setIsLoggedIn(true);
           if (res.data.profile_image) {
-            const img = res.data.profile_image.startsWith("http")
-              ? res.data.profile_image
-              : `https://onclickshop.onrender.com/storage/${res.data.profile_image}`;
-            setProfileImage(img);
+            // ✅ base64 or full URL — use directly
+            setProfileImage(res.data.profile_image);
           }
         })
         .catch(() => { setIsLoggedIn(false); });
@@ -161,7 +159,7 @@ const Navbar: React.FC = () => {
       </div>
 
       {/* navbar-end: cart + notif + auth */}
-      <div className="navbar-end flex-1 justify-end flex items-center sm:gap-1 lg:gap-4 mr-4 xl:mr-10">
+      <div className="navbar-end flex-1 justify-end flex items-center gap-1">
         {/* Cart */}
         <button type="button" onClick={() => navigate("/cart")} title="Cart" className="btn btn-ghost btn-circle btn-sm relative">
           <svg xmlns="http://www.w3.org/2000/svg" version="1.0" width={18} height={18} viewBox="0 0 512.000000 512.000000" preserveAspectRatio="xMidYMid meet" className="text-gray-800">
@@ -208,7 +206,7 @@ const Navbar: React.FC = () => {
 
         {/* Avatar / Login */}
         {isLoggedIn ? (
-          <div className="dropdown dropdown-end sm:ml-2 ">
+          <div className="dropdown dropdown-end">
             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle btn-sm avatar ring-2 ring-orange-100 hover:ring-orange-300">
               <div className="w-8 rounded-full bg-gray-100 overflow-hidden">
                 {profileImage ? (
@@ -248,7 +246,7 @@ const Navbar: React.FC = () => {
             </ul>
           </div>
         ) : (
-          <div className="flex gap-1 sm:gap-2 items-center sm:ml-2">
+          <div className="flex gap-1 sm:gap-2 items-center">
             <button
               type="button"
               className="btn btn-xs sm:btn-sm rounded-full bg-gray-100 text-gray-700 hover:bg-orange-100 hover:text-orange-700 border border-gray-200/80 px-3 sm:px-5 min-h-0 h-8 sm:h-9 text-xs sm:text-sm"

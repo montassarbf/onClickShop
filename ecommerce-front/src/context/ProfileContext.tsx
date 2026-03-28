@@ -34,7 +34,12 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (!token) return;
 
     const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) return;
+    // ✅ Clear old broken URLs (old storage paths, not base64 or full https)
+    if (cached && cached.includes("/storage/") && !cached.startsWith("data:")) {
+      localStorage.removeItem(CACHE_KEY);
+    } else if (cached) {
+      return; // valid cache, skip fetch
+    }
 
     api.get("/me")
       .then((res) => {
