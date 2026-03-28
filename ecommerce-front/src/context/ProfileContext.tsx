@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import api from "../api/apiClient";
 
 interface ProfileContextType {
@@ -15,10 +15,25 @@ export const useProfile = () => useContext(ProfileContext);
 
 const CACHE_KEY = "profile_image_url";
 
+// ✅ Read cache ONCE outside component — instant, synchronous, no re-render
+const getInitialImage = (): string => {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    // Clear old broken storage URLs
+    if (cached && cached.includes("/storage/") && !cached.startsWith("data:")) {
+      localStorage.removeItem(CACHE_KEY);
+      return "";
+    }
+    return cached || "";
+  } catch {
+    return "";
+  }
+};
+
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [profileImage, setProfileImageState] = useState<string>(
-    () => localStorage.getItem(CACHE_KEY) || ""
-  );
+  const [profileImage, setProfileImageState] = useState<string>(getInitialImage);
+  // ✅ Track if we already fetched — prevents re-fetch on navigation
+  const hasFetched = useRef(false);
 
   const setProfileImage = (url: string) => {
     if (url) {
@@ -33,23 +48,21 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    const cached = localStorage.getItem(CACHE_KEY);
-    // ✅ Clear old broken URLs (old storage paths, not base64 or full https)
-    if (cached && cached.includes("/storage/") && !cached.startsWith("data:")) {
-      localStorage.removeItem(CACHE_KEY);
-    } else if (cached) {
-      return; // valid cache, skip fetch
-    }
+    // ✅ If image already in state (from cache) — NEVER fetch again
+    if (profileImage) return;
+
+    // ✅ If already fetched this session — NEVER fetch again
+    if (hasFetched.current) return;
+    hasFetched.current = true;
 
     api.get("/me")
       .then((res) => {
         if (res.data.profile_image) {
-          // ✅ base64 or full URL — use directly
           setProfileImage(res.data.profile_image);
         }
       })
       .catch(() => {});
-  }, []);
+  }, []); // ✅ Empty deps — runs ONCE only, never on navigation
 
   return (
     <ProfileContext.Provider value={{ profileImage, setProfileImage }}>

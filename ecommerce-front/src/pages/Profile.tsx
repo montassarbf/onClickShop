@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../api/apiClient";
+import { useProfile } from "../context/ProfileContext";
 
 type Me = {
   id: number;
@@ -9,16 +10,31 @@ type Me = {
   profile_image: string | null;
 };
 
+const CACHE_KEY = "profile_me_cache";
+
 const Profile: React.FC = () => {
-  const [user, setUser] = useState<Me | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // ✅ Use cached profile image from context — instant, no fetch
+  const { profileImage } = useProfile();
   const navigate = useNavigate();
 
+  // ✅ Cache user info (name, email, id) in localStorage too
+  const [user, setUser] = useState<Me | null>(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+  });
+  const [loading, setLoading] = useState(!user);
+  const [error, setError] = useState("");
+
   useEffect(() => {
+    // ✅ If already cached — skip fetch entirely
+    if (user) return;
+
     const load = async () => {
       try {
         const res = await apiClient.get<Me>("/me");
+        localStorage.setItem(CACHE_KEY, JSON.stringify(res.data));
         setUser(res.data);
       } catch {
         setError("Could not load your profile.");
@@ -29,18 +45,16 @@ const Profile: React.FC = () => {
     load();
   }, []);
 
-  // ✅ base64 or full URL — use directly
-  const avatarUrl = user?.profile_image
-    ? user.profile_image
-    : "https://api.dicebear.com/7.x/avataaars/svg?seed=profile";
+  // ✅ Use context image (instant from cache) — fallback to API data — fallback to avatar
+  const avatarUrl = profileImage
+    || user?.profile_image
+    || "https://api.dicebear.com/7.x/avataaars/svg?seed=profile";
 
-  if (loading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center text-gray-500">
-        Loading profile…
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <span className="loading loading-spinner loading-lg text-orange-400" />
+    </div>
+  );
 
   if (error || !user) {
     return (
