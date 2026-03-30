@@ -6,21 +6,33 @@ import { useCart } from "../context/CartContext";
 import { useProfile } from "../context/ProfileContext";
 
 const sections = [
-  { id: "Home", label: "Home" },
-  { id: "Shop", label: "Shop" },
-  { id: "Deals", label: "Deals" },
-  { id: "new", label: "New Arrivals" },
+  { id: "Home",    label: "Home" },
+  { id: "Shop",    label: "Shop" },
+  { id: "Deals",   label: "Deals" },
+  { id: "new",     label: "New Arrivals" },
   { id: "contact", label: "Contact" },
 ];
 
 const CART_CACHE_KEY = "cart_count_cache";
 
+// ✅ Vider TOUS les caches liés à un compte
+const clearAllUserCache = () => {
+  localStorage.removeItem(CART_CACHE_KEY);
+  localStorage.removeItem("profile_image_url");
+  localStorage.removeItem("cart_order_items_cache");
+  localStorage.removeItem("cart_items");
+  // Vider tous les caches profile_me_* (liés au token)
+  Object.keys(localStorage)
+    .filter(k => k.startsWith("profile_me_"))
+    .forEach(k => localStorage.removeItem(k));
+};
+
 const Navbar: React.FC = () => {
-  const [active, setActive] = useState("Home");
+  const [active,     setActive]     = useState("Home");
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const navigate = useNavigate();
   const location = useLocation();
-  const { cartCount, clearCart } = useCart();
+  const { cartCount, clearCart }      = useCart();
   const { profileImage, setProfileImage } = useProfile();
 
   const [apiCartTotal, setApiCartTotal] = useState<number>(
@@ -48,8 +60,10 @@ const Navbar: React.FC = () => {
         .then((res) => {
           setIsLoggedIn(true);
           if (res.data.profile_image) {
-            // ✅ base64 or full URL — use directly
-            setProfileImage(res.data.profile_image);
+            const img = res.data.profile_image.startsWith("http")
+              ? res.data.profile_image
+              : `http://127.0.0.1:8000/storage/${res.data.profile_image}`;
+            setProfileImage(img);
           }
         })
         .catch(() => { setIsLoggedIn(false); });
@@ -89,11 +103,11 @@ const Navbar: React.FC = () => {
     setActive(id);
   };
 
+  // ✅ Vider TOUS les caches au logout → plus de problème de compte croisé
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("profile_image_url");
-    localStorage.removeItem("cart_order_items_cache");
-    clearCart(); // ✅ resets cart state + localStorage + counter to 0
+    clearAllUserCache();
+    clearCart();
     setIsLoggedIn(false);
     setProfileImage("");
     setApiCartTotal(0);
@@ -101,17 +115,16 @@ const Navbar: React.FC = () => {
   };
 
   const [notifications] = useState([
-    { id: 1, text: "Your order has shipped.", time: "2h ago", read: false },
+    { id: 1, text: "Your order has shipped.",               time: "2h ago", read: false },
     { id: 2, text: "Weekend sale: 20% off selected items.", time: "1d ago", read: false },
-    { id: 3, text: "Welcome to Onclick Shop!", time: "3d ago", read: true },
+    { id: 3, text: "Welcome to Onclick Shop!",              time: "3d ago", read: true  },
   ]);
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const avatarUrl = profileImage || "https://api.dicebear.com/7.x/avataaars/svg?seed=profile";
-
   return (
     <div className="fixed top-0 left-0 right-0 navbar bg-white text-gray-800 shadow-sm pt-3 pb-3 px-3 lg:pr-10 w-full max-w-full mx-auto rounded-b-xl z-50 border-b border-gray-100/80">
-      
+
       {/* navbar-start: burger (mobile) + desktop menu */}
       <div className="navbar-start flex-1">
         {/* Mobile burger */}
@@ -139,7 +152,9 @@ const Navbar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => scrollToSection(item.id)}
-                className={`relative font-medium transition-all duration-300 bg-transparent border-none cursor-pointer px-1 py-2 ${active === item.id ? "text-orange-400" : "text-gray-600 hover:text-orange-400"}`}
+                className={`relative font-medium transition-all duration-300 bg-transparent border-none cursor-pointer px-1 py-2 ${
+                  active === item.id ? "text-orange-400" : "text-gray-600 hover:text-orange-400"
+                }`}
               >
                 {item.label}
                 {active === item.id && (
@@ -160,6 +175,7 @@ const Navbar: React.FC = () => {
 
       {/* navbar-end: cart + notif + auth */}
       <div className="navbar-end flex-1 justify-end flex items-center gap-1">
+
         {/* Cart */}
         <button type="button" onClick={() => navigate("/cart")} title="Cart" className="btn btn-ghost btn-circle btn-sm relative">
           <svg xmlns="http://www.w3.org/2000/svg" version="1.0" width={18} height={18} viewBox="0 0 512.000000 512.000000" preserveAspectRatio="xMidYMid meet" className="text-gray-800">
@@ -209,16 +225,15 @@ const Navbar: React.FC = () => {
           <div className="dropdown dropdown-end">
             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle btn-sm avatar ring-2 ring-orange-100 hover:ring-orange-300">
               <div className="w-8 rounded-full bg-gray-100 overflow-hidden">
-                {profileImage ? (
+                
                   <img
                     src={avatarUrl}
                     alt=""
                     className="object-cover w-full h-full"
                     onError={e => { (e.target as HTMLImageElement).src = "https://api.dicebear.com/7.x/avataaars/svg?seed=profile"; }}
                   />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 animate-pulse rounded-full" />
-                )}
+                
+                 
               </div>
             </div>
             <ul tabIndex={0} className="menu menu-sm dropdown-content bg-white rounded-box z-[60] mt-3 w-52 p-2 shadow-lg border border-gray-100">
@@ -232,14 +247,18 @@ const Navbar: React.FC = () => {
                 </button>
               </li>
               <li className="p-2">
-                <button type="button" onClick={() => navigate("/settings")}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B3B3B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-round-cog-icon lucide-user-round-cog"><path d="m14.305 19.53.923-.382" /><path d="m15.228 16.852-.923-.383" /><path d="m16.852 15.228-.383-.923" /><path d="m16.852 20.772-.383.924" /><path d="m19.148 15.228.383-.923" /><path d="m19.53 21.696-.382-.924" /><path d="M2 21a8 8 0 0 1 10.434-7.62" /><path d="m20.772 16.852.924-.383" /><path d="m20.772 19.148.924.383" /><circle cx="10" cy="8" r="5" /><circle cx="18" cy="18" r="3" /></svg>
+                <button type="button" onClick={() => navigate("/settings")} className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B3B3B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m14.305 19.53.923-.382"/><path d="m15.228 16.852-.923-.383"/><path d="m16.852 15.228-.383-.923"/><path d="m16.852 20.772-.383.924"/><path d="m19.148 15.228.383-.923"/><path d="m19.53 21.696-.382-.924"/><path d="M2 21a8 8 0 0 1 10.434-7.62"/><path d="m20.772 16.852.924-.383"/><path d="m20.772 19.148.924.383"/><circle cx="10" cy="8" r="5"/><circle cx="18" cy="18" r="3"/>
+                  </svg>
                   <span>Settings</span>
                 </button>
               </li>
               <li className="p-2">
-                <button type="button" className="text-error" onClick={handleLogout}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-log-out-icon lucide-log-out"><path d="m16 17 5-5-5-5" /><path d="M21 12H9" /><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></svg>
+                <button type="button" className="text-error flex items-center gap-2" onClick={handleLogout}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  </svg>
                   <span>Logout</span>
                 </button>
               </li>

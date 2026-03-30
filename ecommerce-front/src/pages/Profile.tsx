@@ -10,31 +10,38 @@ type Me = {
   profile_image: string | null;
 };
 
-const CACHE_KEY = "profile_me_cache";
+// ✅ Cache key lié aux derniers caractères du token → unique par compte
+const getCacheKey = () => {
+  const token = localStorage.getItem("token");
+  return token ? `profile_me_${token.slice(-12)}` : "profile_me_guest";
+};
 
 const Profile: React.FC = () => {
-  // ✅ Use cached profile image from context — instant, no fetch
   const { profileImage } = useProfile();
   const navigate = useNavigate();
 
-  // ✅ Cache user info (name, email, id) in localStorage too
   const [user, setUser] = useState<Me | null>(() => {
     try {
-      const cached = localStorage.getItem(CACHE_KEY);
+      const cached = localStorage.getItem(getCacheKey());
       return cached ? JSON.parse(cached) : null;
     } catch { return null; }
   });
   const [loading, setLoading] = useState(!user);
-  const [error, setError] = useState("");
+  const [error,   setError]   = useState("");
 
   useEffect(() => {
-    // ✅ If already cached — skip fetch entirely
-    if (user) return;
-
+    // ✅ Toujours refetch pour s'assurer que les données sont à jour
     const load = async () => {
       try {
         const res = await apiClient.get<Me>("/me");
-        localStorage.setItem(CACHE_KEY, JSON.stringify(res.data));
+
+        // ✅ Vider tous les anciens caches profile_me_* avant de sauvegarder
+        Object.keys(localStorage)
+          .filter(k => k.startsWith("profile_me_"))
+          .forEach(k => localStorage.removeItem(k));
+
+        // ✅ Sauvegarder avec la clé liée au token actuel
+        localStorage.setItem(getCacheKey(), JSON.stringify(res.data));
         setUser(res.data);
       } catch {
         setError("Could not load your profile.");
@@ -45,10 +52,13 @@ const Profile: React.FC = () => {
     load();
   }, []);
 
-  // ✅ Use context image (instant from cache) — fallback to API data — fallback to avatar
-  const avatarUrl = profileImage
-    || user?.profile_image
-    || "https://api.dicebear.com/7.x/avataaars/svg?seed=profile";
+  const avatarUrl =
+    profileImage ||
+    (user?.profile_image
+      ? user.profile_image.startsWith("http")
+        ? user.profile_image
+        : `http://127.0.0.1:8000/storage/${user.profile_image}`
+      : "https://api.dicebear.com/7.x/avataaars/svg?seed=profile");
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -80,7 +90,15 @@ const Profile: React.FC = () => {
           <div className="px-6 pb-8 -mt-12">
             <div className="flex flex-col sm:flex-row sm:items-end gap-6">
               <div className="w-28 h-28 rounded-2xl ring-4 ring-white shadow-lg overflow-hidden bg-gray-100 shrink-0">
-                <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={avatarUrl}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "https://api.dicebear.com/7.x/avataaars/svg?seed=profile";
+                  }}
+                />
               </div>
               <div className="flex-1 pt-2 sm:pb-1">
                 <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
