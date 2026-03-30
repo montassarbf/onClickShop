@@ -65,14 +65,22 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="text-xs text-gray-400 text-center sm:text-left ">
+        <div className="border-t border-gray-700 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-xs text-gray-400 text-center sm:text-left">
             © {new Date().getFullYear()} Onclick Shop. All rights reserved.
           </p>
           <div className="flex gap-4">
             <button type="button" className="text-xs text-gray-400 hover:text-orange-400 transition duration-200">Privacy Policy</button>
             <button type="button" className="text-xs text-gray-400 hover:text-orange-400 transition duration-200">Terms of Service</button>
           </div>
+        </div>
+
+        {/* Created by */}
+        <div className="mt-4 text-center">
+          <p className="text-xs text-gray-600">
+            Designed & developed by{" "}
+            <span className="text-orange-400 font-semibold">Montassar Ben Fraj</span>
+          </p>
         </div>
 
       </div>
