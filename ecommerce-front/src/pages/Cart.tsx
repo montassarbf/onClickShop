@@ -107,7 +107,15 @@ const Cart: React.FC = () => {
     }
     api
       .get<OrderItem[]>("/cart")
-      .then((res) => updateItems(res.data))
+      .then((res) => {
+        const data = Array.isArray(res.data) ? res.data : (res.data as any)?.data;
+        if (Array.isArray(data)) {
+          updateItems(data);
+        } else {
+          console.error("Cart API returned invalid data", res.data);
+          updateItems([]);
+        }
+      })
       .catch((err) => console.error("Failed to fetch cart:", err))
       .finally(() => setLoading(false));
   }, []);
