@@ -7,6 +7,7 @@ import ProductCard from "../components/ProductCard";
 import { useProducts } from "../hooks/useProducts";
 import { useAddToCart } from "../hooks/useAddToCart";
 import { ITEMS_PER_PAGE } from "../constants";
+import { safeArray } from "../utils";
 
 const SORT_OPTIONS = ["highest price", "lower price", "A-Z", "Z-A"] as const;
 type SortType = "---" | (typeof SORT_OPTIONS)[number];
@@ -27,12 +28,12 @@ const Deals: React.FC = () => {
   }, [selectedCategory, searchTerm, sortOrder]);
 
   // Only show products that are marked as deals.
-  const filteredProducts = products
+  const filteredProducts = safeArray(products)
     .filter((p) => {
       if (!p.is_deal) return false;
       if (!p.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
       if (selectedCategory === "All") return true;
-      return categories.find((cat) => cat.id === p.category_id)?.name === selectedCategory;
+      return safeArray(categories).find((cat) => cat.id === p.category_id)?.name === selectedCategory;
     })
     .sort((a, b) => {
       switch (sortOrder) {
