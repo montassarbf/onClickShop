@@ -49,16 +49,12 @@ export function useProducts(): UseProductsResult {
     api
       .get<Product[]>("/products")
       .then((res) => {
-        // Render or Vercel might return an HTML string if the backend is down.
-        // We must ensure the data is an array before setting it to prevent crashes.
         const data = Array.isArray(res.data) ? res.data : (res.data as any)?.data;
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           setProducts(data);
           writeCache(PRODUCTS_CACHE_KEY, data);
-        } else {
+        } else if (!Array.isArray(data)) {
           console.error("API did not return a valid products array", res.data);
-          // Fallback to empty array to prevent .filter() crashes
-          setProducts([]);
         }
       })
       .catch((err) => console.error("Failed to fetch products:", err))
@@ -69,12 +65,11 @@ export function useProducts(): UseProductsResult {
       .get<Category[]>("/categories")
       .then((res) => {
         const data = Array.isArray(res.data) ? res.data : (res.data as any)?.data;
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           setCategories(data);
           writeCache(CATEGORIES_CACHE_KEY, data);
-        } else {
+        } else if (!Array.isArray(data)) {
           console.error("API did not return a valid categories array", res.data);
-          setCategories([]);
         }
       })
       .catch((err) => console.error("Failed to fetch categories:", err));
