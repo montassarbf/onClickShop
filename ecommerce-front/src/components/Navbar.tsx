@@ -5,6 +5,7 @@ import apiClient from "../api/apiClient";
 import { useCart } from "../context/CartContext";
 import { useProfile } from "../context/ProfileContext";
 import { DEFAULT_AVATAR, CART_COUNT_CACHE_KEY } from "../constants";
+import { safeArray } from "../utils";
 
 const NAV_SECTIONS = [
   { id: "Home",    label: "Home" },
@@ -49,7 +50,8 @@ const Navbar: React.FC = () => {
     }
     try {
       const res = await apiClient.get<Array<{ quantity: number }>>("/cart");
-      const total = res.data.reduce(
+      const data = safeArray<{ quantity: number }>(res.data);
+      const total = data.reduce(
         (sum, row) => sum + Number(row.quantity),
         0
       );
