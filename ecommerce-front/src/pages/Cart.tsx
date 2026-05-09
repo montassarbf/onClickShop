@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/apiClient";
 import LoadingSpinner from "../components/LoadingSpinner";
 import type { OrderItem } from "../types";
+import { safeArray } from "../utils";
 import { CART_ITEMS_CACHE_KEY, DEFAULT_PRODUCT_IMAGE } from "../constants";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -123,7 +124,7 @@ const Cart: React.FC = () => {
   const handleRemove = async (orderItemId: number, productId: number) => {
     try {
       removeProductFromCart(productId);
-      updateItems(orderItems.filter((item) => item.id !== orderItemId));
+      updateItems(safeArray<OrderItem>(orderItems).filter((item) => item.id !== orderItemId));
       await api.delete(`/cart/${orderItemId}`);
     } catch (err) {
       console.error("Failed to remove cart item:", err);
@@ -133,7 +134,7 @@ const Cart: React.FC = () => {
   const handleCheckout = async () => {
     try {
       await api.post("/orders", {
-        items: orderItems.map((item) => ({
+        items: safeArray<OrderItem>(orderItems).map((item) => ({
           product_id: item.product.id,
           quantity: item.quantity,
           price: item.price,
@@ -157,7 +158,7 @@ const Cart: React.FC = () => {
   };
 
   // Computed totals
-  const total = orderItems.reduce(
+  const total = safeArray<OrderItem>(orderItems).reduce(
     (sum, item) => sum + Number(item.price) * item.quantity,
     0
   );
@@ -203,7 +204,7 @@ const Cart: React.FC = () => {
 
             {/* Left column: items + order summary */}
             <div className="lg:col-span-2 flex flex-col gap-4">
-              {orderItems.map((item) => (
+              {safeArray<OrderItem>(orderItems).map((item) => (
                 <div
                   key={item.id}
                   className="bg-white shadow-md hover:shadow-xl transition duration-300 rounded-2xl p-4 flex items-center gap-4 border border-gray-100"

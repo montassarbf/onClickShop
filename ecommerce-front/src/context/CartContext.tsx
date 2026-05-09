@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import type { CartItem } from "../types";
+import { safeArray } from "../utils";
 import {
   CART_LOCAL_KEY,
   CART_COUNT_CACHE_KEY,
@@ -46,20 +47,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const addToCart = (product: Omit<CartItem, "quantity">) => {
-    const existing = cart.find((item) => item.id === product.id);
+    const existing = safeArray<CartItem>(cart).find((item) => item.id === product.id);
     const next = existing
-      ? cart.map((item) =>
+      ? safeArray<CartItem>(cart).map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )
-      : [...cart, { ...product, quantity: 1 }];
+      : [...safeArray<CartItem>(cart), { ...product, quantity: 1 }];
     updateCart(next);
   };
 
   // Decrease quantity by 1, remove the item if it reaches 0.
   const removeFromCart = (productId: number) => {
-    const next = cart
+    const next = safeArray<CartItem>(cart)
       .map((item) =>
         item.id === productId ? { ...item, quantity: item.quantity - 1 } : item
       )
@@ -69,7 +70,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Remove a product entirely regardless of quantity.
   const removeProductFromCart = (productId: number) => {
-    updateCart(cart.filter((item) => item.id !== productId));
+    updateCart(safeArray<CartItem>(cart).filter((item) => item.id !== productId));
   };
 
   const clearCart = () => {
@@ -78,7 +79,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     setCart([]);
   };
 
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount = safeArray<CartItem>(cart).reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <CartContext.Provider
