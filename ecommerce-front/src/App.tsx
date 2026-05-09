@@ -1,9 +1,9 @@
 import { Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Cart from "./pages/Cart";
-import Layout from "./pages/Layout";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Contact from "./pages/Contact";
@@ -12,9 +12,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 function App() {
   return (
     <Routes>
+      {/* Pages that use the shared Navbar layout */}
       <Route element={<Layout />}>
-        <Route path="/" element={<Landing />} />
-        <Route path="/cart" element={<Cart />} />
+        <Route path="/"        element={<Landing />} />
+        <Route path="/cart"    element={<Cart />} />
         <Route path="/contact" element={<Contact />} />
         <Route
           path="/profile"
@@ -34,7 +35,8 @@ function App() {
         />
       </Route>
 
-      <Route path="/login" element={<Login />} />
+      {/* Auth pages — no Navbar */}
+      <Route path="/login"    element={<Login />} />
       <Route path="/register" element={<Register />} />
     </Routes>
   );

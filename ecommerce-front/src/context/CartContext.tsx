@@ -1,44 +1,43 @@
 import React, { createContext, useContext, useState } from "react";
-
-export interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  image_url: string;
-  quantity: number;
-}
+import type { CartItem } from "../types";
+import {
+  CART_LOCAL_KEY,
+  CART_COUNT_CACHE_KEY,
+} from "../constants";
 
 interface CartContextType {
   cart: CartItem[];
   cartCount: number;
   addToCart: (product: Omit<CartItem, "quantity">) => void;
-  removeFromCart: (id: number) => void;
+  removeFromCart: (productId: number) => void;
   removeProductFromCart: (productId: number) => void;
   clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_KEY = "cart_items";
-
-// ✅ Lire le panier depuis localStorage au démarrage
+// Read the cart from localStorage on startup.
 const loadCart = (): CartItem[] => {
   try {
-    const raw = localStorage.getItem(CART_KEY);
+    const raw = localStorage.getItem(CART_LOCAL_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
 };
 
-// ✅ Sauvegarder le panier dans localStorage
+// Persist the cart to localStorage and update the count badge cache.
 const saveCart = (cart: CartItem[]) => {
-  localStorage.setItem(CART_KEY, JSON.stringify(cart));
-  localStorage.setItem("cart_count_cache", String(cart.reduce((s, p) => s + p.quantity, 0)));
+  localStorage.setItem(CART_LOCAL_KEY, JSON.stringify(cart));
+  localStorage.setItem(
+    CART_COUNT_CACHE_KEY,
+    String(cart.reduce((sum, item) => sum + item.quantity, 0))
+  );
 };
 
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // ✅ Initialiser depuis localStorage → pas de rechargement au refresh
+export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [cart, setCart] = useState<CartItem[]>(loadCart);
 
   const updateCart = (next: CartItem[]) => {
@@ -47,34 +46,51 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const addToCart = (product: Omit<CartItem, "quantity">) => {
-    const exist = cart.find(p => p.id === product.id);
-    const next = exist
-      ? cart.map(p => p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p)
+    const existing = cart.find((item) => item.id === product.id);
+    const next = existing
+      ? cart.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
       : [...cart, { ...product, quantity: 1 }];
     updateCart(next);
   };
 
+  // Decrease quantity by 1, remove the item if it reaches 0.
   const removeFromCart = (productId: number) => {
     const next = cart
-      .map(p => p.id === productId ? { ...p, quantity: p.quantity - 1 } : p)
-      .filter(p => p.quantity > 0);
+      .map((item) =>
+        item.id === productId ? { ...item, quantity: item.quantity - 1 } : item
+      )
+      .filter((item) => item.quantity > 0);
     updateCart(next);
   };
 
+  // Remove a product entirely regardless of quantity.
   const removeProductFromCart = (productId: number) => {
-    updateCart(cart.filter(p => p.id !== productId));
+    updateCart(cart.filter((item) => item.id !== productId));
   };
 
   const clearCart = () => {
-    localStorage.removeItem(CART_KEY);
-    localStorage.setItem("cart_count_cache", "0");
+    localStorage.removeItem(CART_LOCAL_KEY);
+    localStorage.setItem(CART_COUNT_CACHE_KEY, "0");
     setCart([]);
   };
 
-  const cartCount = cart.reduce((sum, p) => sum + p.quantity, 0);
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ cart, cartCount, addToCart, removeFromCart, removeProductFromCart, clearCart }}>
+    <CartContext.Provider
+      value={{
+        cart,
+        cartCount,
+        addToCart,
+        removeFromCart,
+        removeProductFromCart,
+        clearCart,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
@@ -82,6 +98,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useCart = () => {
   const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("useCart must be inside CartProvider");
+  if (!ctx) throw new Error("useCart must be used inside <CartProvider>");
   return ctx;
 };
+
+// Re-export CartItem so consumers can import it from here if needed.
+export type { CartItem };

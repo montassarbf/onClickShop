@@ -2,21 +2,25 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/apiClient";
 import { useProfile } from "../context/ProfileContext";
+import { DEFAULT_AVATAR } from "../constants";
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
   const { profileImage, setProfileImage } = useProfile();
 
+  // Notification preferences (UI only — wire to API when ready)
   const [emailNotifs, setEmailNotifs]   = useState(true);
   const [orderUpdates, setOrderUpdates] = useState(true);
   const [promos, setPromos]             = useState(false);
   const [saved, setSaved]               = useState(false);
+
+  // Profile photo upload
   const [preview, setPreview]     = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSave = () => {
+  const handleSavePreferences = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -42,11 +46,7 @@ const Settings: React.FC = () => {
       const res = await api.post("/user/profile-image", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      // Construire l'URL complète
       const image = res.data.profile_image;
-
-      // ✅ utilise directement ce que le backend retourne
       setProfileImage(image);
       setPreview(image);
       setUploadMsg({ text: "Photo updated successfully!", ok: true });
@@ -57,9 +57,16 @@ const Settings: React.FC = () => {
     }
   };
 
+  const handleCancelPreview = () => {
+    setPreview(null);
+    setUploadMsg(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   return (
     <section className="min-h-screen bg-gradient-to-b from-gray-50 to-white px-4 sm:px-8 py-12">
       <div className="max-w-2xl mx-auto">
+
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -75,25 +82,27 @@ const Settings: React.FC = () => {
 
         <div className="space-y-6">
 
-          {/* PROFILE PHOTO */}
+          {/* ── Profile photo ─────────────────────────────────────────────── */}
           <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-5">Profile Photo</h2>
 
             <div className="flex items-center gap-6">
+              {/* Avatar preview */}
               <div className="relative shrink-0">
                 <div className="w-24 h-24 rounded-2xl ring-4 ring-orange-100 overflow-hidden bg-gray-100">
                   <img
-                    src={profileImage || "https://api.dicebear.com/7.x/avataaars/svg?seed=profile"}
-                    alt="Profile"
+                    src={preview || profileImage || DEFAULT_AVATAR}
+                    alt="Profile preview"
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
+                  aria-label="Change profile photo"
                   className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-md transition duration-200"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
                     <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
                     <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"/>
                   </svg>
@@ -112,7 +121,7 @@ const Settings: React.FC = () => {
                   onChange={handleFileChange}
                 />
 
-                <div className="flex flex-wrap gap-2 ">
+                <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
@@ -130,7 +139,7 @@ const Settings: React.FC = () => {
                     >
                       {uploading ? (
                         <span className="flex items-center gap-2 p-2">
-                          <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                           </svg>
@@ -143,11 +152,7 @@ const Settings: React.FC = () => {
                   {preview && (
                     <button
                       type="button"
-                      onClick={() => {
-                        setPreview(null);
-                        setUploadMsg(null);
-                        if (fileInputRef.current) fileInputRef.current.value = "";
-                      }}
+                      onClick={handleCancelPreview}
                       className="btn btn-sm btn-ghost text-gray-400 hover:text-red-400 p-2"
                     >
                       Cancel
@@ -164,37 +169,64 @@ const Settings: React.FC = () => {
             </div>
           </div>
 
-          {/* NOTIFICATIONS */}
+          {/* ── Notifications ─────────────────────────────────────────────── */}
           <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Notifications</h2>
+
             <label className="flex items-center justify-between gap-4 py-3 border-b border-gray-100 cursor-pointer">
               <span className="text-gray-700">Email notifications</span>
-              <input type="checkbox" className="toggle toggle-warning text-orange-400 border-gray-100 border-gray-50 border-2" checked={emailNotifs} onChange={(e) => setEmailNotifs(e.target.checked)} />
+              <input
+                type="checkbox"
+                className="toggle toggle-warning text-orange-400 border-gray-100 border-2"
+                checked={emailNotifs}
+                onChange={(e) => setEmailNotifs(e.target.checked)}
+              />
             </label>
             <label className="flex items-center justify-between gap-4 py-3 border-b border-gray-100 cursor-pointer">
-              <span className="text-gray-700">Order & shipping updates</span>
-              <input type="checkbox" className="toggle toggle-warning text-orange-400 border-gray-100 border-gray-50 border-2" checked={orderUpdates} onChange={(e) => setOrderUpdates(e.target.checked)} />
+              <span className="text-gray-700">Order &amp; shipping updates</span>
+              <input
+                type="checkbox"
+                className="toggle toggle-warning text-orange-400 border-gray-100 border-2"
+                checked={orderUpdates}
+                onChange={(e) => setOrderUpdates(e.target.checked)}
+              />
             </label>
             <label className="flex items-center justify-between gap-4 py-3 cursor-pointer">
-              <span className="text-gray-700">Promotions & deals</span>
-              <input type="checkbox" className="toggle toggle-warning text-orange-400 border-gray-100 border-gray-50 border-2" checked={promos} onChange={(e) => setPromos(e.target.checked)} />
+              <span className="text-gray-700">Promotions &amp; deals</span>
+              <input
+                type="checkbox"
+                className="toggle toggle-warning text-orange-400 border-gray-100 border-2"
+                checked={promos}
+                onChange={(e) => setPromos(e.target.checked)}
+              />
             </label>
           </div>
 
-          {/* ACCOUNT */}
+          {/* ── Account ───────────────────────────────────────────────────── */}
           <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Account</h2>
-            <p className="text-sm text-gray-600 mb-4">Password changes and security options can be wired to your API when available.</p>
+            <p className="text-sm text-gray-600 mb-4">
+              Password changes and security options can be wired to your API when available.
+            </p>
             <button type="button" className="btn btn-outline btn-sm border-gray-300" disabled>
-              Change password (soon)
+              Change password (coming soon)
             </button>
           </div>
 
+          {/* Save button */}
           <div className="flex flex-wrap gap-3">
-            <button type="button" className="btn bg-orange-500 hover:bg-orange-600 text-white border-0 p-5" onClick={handleSave}>
+            <button
+              type="button"
+              className="btn bg-orange-500 hover:bg-orange-600 text-white border-0 p-5"
+              onClick={handleSavePreferences}
+            >
               Save preferences
             </button>
-            {saved && <span className="text-sm text-green-600 self-center">Preferences saved.</span>}
+            {saved && (
+              <span role="status" className="text-sm text-green-600 self-center">
+                Preferences saved.
+              </span>
+            )}
           </div>
 
         </div>

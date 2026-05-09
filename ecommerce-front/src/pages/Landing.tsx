@@ -1,21 +1,23 @@
 import Home from "./Home";
 import Shop from "./Shop";
 import Deals from "./Deals";
-import NewArrivals from "./NewArrivals";
-import ContactSection from "./ContactSection";
-import Footer from "./Footer";
+import NewArrivals from "../components/NewArrivals";
+import ContactSection from "../components/ContactSection";
+import Footer from "../components/Footer";
 
-const Landing = () => {
-  return (
-    <>
-      <Home />
-      <Shop />
-      <Deals />
-      <NewArrivals />
-      <ContactSection />
-      <Footer />
-    </>
-  );
-};
+/**
+ * Landing page — assembles all home sections in order.
+ * Each section has its own id for smooth-scroll navigation.
+ */
+const Landing = () => (
+  <>
+    <Home />
+    <Shop />
+    <Deals />
+    <NewArrivals />
+    <ContactSection />
+    <Footer />
+  </>
+);
 
 export default Landing;
