@@ -1,4 +1,5 @@
 import React from "react";
+import { safeArray } from "../utils";
 
 interface PaginationProps {
   currentPage: number;
@@ -52,7 +53,7 @@ const Pagination: React.FC<PaginationProps> = ({
       </button>
 
       {/* Page numbers */}
-      {getPages().map((page, idx) =>
+      {safeArray<number | "...">(getPages()).map((page, idx) =>
         page === "..." ? (
           <span
             key={`dots-${idx}`}

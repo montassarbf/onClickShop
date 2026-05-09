@@ -1,9 +1,26 @@
 /**
- * Safely converts any value to an array.
- * If the value is an array, it is returned as-is.
- * If the value is undefined, null, or any other type, an empty array is returned.
- * This prevents crashes when running array methods like .map() or .filter() on API data.
+ * Ensures the input is ALWAYS an array. 
+ * Automatically handles Laravel-style { data: [...] } wrappers.
  */
-export const safeArray = <T>(data: T[] | unknown | any): T[] => {
-  return Array.isArray(data) ? data : [];
+export const safeArray = <T>(data: any): T[] => {
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === "object" && Array.isArray(data.data)) {
+    return data.data as T[];
+  }
+  return [];
+};
+
+/** Clears all app-related localStorage to ensure no 'poisoned' objects remain. */
+export const clearOldCaches = () => {
+  const keys = Object.keys(localStorage);
+  keys.forEach((key) => {
+    if (
+      key.includes("cart") ||
+      key.includes("product") ||
+      key.includes("category") ||
+      key.includes("profile")
+    ) {
+      localStorage.removeItem(key);
+    }
+  });
 };

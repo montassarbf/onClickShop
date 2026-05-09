@@ -150,7 +150,7 @@ const Navbar: React.FC = () => {
             </svg>
           </div>
           <ul tabIndex={0} className="menu menu-sm dropdown-content bg-white rounded-box mt-3 w-52 p-2 shadow z-[60] border border-gray-100">
-            {NAV_SECTIONS.map((item) => (
+            {safeArray<{ id: string; label: string }>(NAV_SECTIONS).map((item) => (
               <li key={item.id}>
                 <a
                   href={`#${item.id}`}
@@ -165,7 +165,7 @@ const Navbar: React.FC = () => {
 
         {/* Desktop nav links */}
         <ul className="menu menu-horizontal px-1 hidden lg:flex gap-0 ml-4 xl:ml-10 flex-wrap">
-          {NAV_SECTIONS.map((item) => (
+          {safeArray<{ id: string; label: string }>(NAV_SECTIONS).map((item) => (
             <li key={item.id} className="px-2 xl:px-4">
               <button
                 type="button"
@@ -245,7 +245,7 @@ const Navbar: React.FC = () => {
             <li className="menu-title px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
               Notifications
             </li>
-            {notifications.map((n) => (
+            {safeArray<{ id: number; text: string; time: string; read: boolean }>(notifications).map((n) => (
               <li key={n.id} className="w-full">
                 <a className={`rounded-none py-3 px-4 whitespace-normal ${!n.read ? "bg-orange-50/80" : ""}`}>
                   <span className="block text-sm text-gray-800">{n.text}</span>

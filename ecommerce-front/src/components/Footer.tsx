@@ -1,4 +1,5 @@
 import React from "react";
+import { safeArray } from "../utils";
 
 /** Footer displayed at the bottom of the Landing page. */
 const Footer: React.FC = () => {
@@ -31,7 +32,7 @@ const Footer: React.FC = () => {
 
           {/* Nav links */}
           <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-            {navLinks.map((item) => (
+            {safeArray<{ label: string; id: string }>(navLinks).map((item) => (
               <button
                 key={item.label}
                 type="button"
