@@ -4,6 +4,6 @@
  * If the value is undefined, null, or any other type, an empty array is returned.
  * This prevents crashes when running array methods like .map() or .filter() on API data.
  */
-export const safeArray = <T>(data: unknown): T[] => {
+export const safeArray = <T>(data: T[] | unknown | any): T[] => {
   return Array.isArray(data) ? data : [];
 };

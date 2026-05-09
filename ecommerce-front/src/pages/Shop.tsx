@@ -8,6 +8,7 @@ import { useProducts } from "../hooks/useProducts";
 import { useAddToCart } from "../hooks/useAddToCart";
 import { ITEMS_PER_PAGE } from "../constants";
 import { safeArray } from "../utils";
+import type { Product, Category } from "../types";
 
 const SORT_OPTIONS = ["highest price", "lower price", "A-Z", "Z-A"] as const;
 type SortType = "---" | (typeof SORT_OPTIONS)[number];
@@ -27,20 +28,20 @@ const Shop: React.FC = () => {
     setCurrentPage(1);
   }, [selectedCategory, searchTerm, sortOrder]);
 
-  const filteredProducts = safeArray(products)
+  const filteredProducts = safeArray<Product>(products)
     .filter((p) => {
       if (p.is_deal) return false;
       if (!p.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
       if (selectedCategory === "All") return true;
-      return safeArray(categories).find((cat) => cat.id === p.category_id)?.name === selectedCategory;
+      return safeArray<Category>(categories).find((cat) => cat.id === p.category_id)?.name === selectedCategory;
     })
     .sort((a, b) => {
       switch (sortOrder) {
         case "highest price": return b.price - a.price;
-        case "lower price":   return a.price - b.price;
-        case "A-Z":           return a.name.localeCompare(b.name);
-        case "Z-A":           return b.name.localeCompare(a.name);
-        default:              return 0;
+        case "lower price": return a.price - b.price;
+        case "A-Z": return a.name.localeCompare(b.name);
+        case "Z-A": return b.name.localeCompare(a.name);
+        default: return 0;
       }
     });
 
